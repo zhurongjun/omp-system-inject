@@ -76,6 +76,30 @@ cp inject/*.md <你的项目>/.omp/system_inject/
 约束:不要修改任何复制过去的文件内容;不要执行 git 操作;不要执行本项目之外的命令。
 ```
 
+## 一键更新(安装后,把下面这段复制给任意 coding agent)
+
+> 已安装过旧版本时,用这段更新到仓库最新版。会覆盖扩展与仓库自带的版本文件,但**保留用户自行添加的其他版本文件**。
+
+```text
+请将已安装的 omp-system-inject 更新到最新版,自动适配当前操作系统。
+仓库:https://github.com/zhurongjun/omp-system-inject.git
+
+1. 获取最新代码:若当前就在该仓库目录,先 git pull;否则克隆到临时目录再操作。
+2. 用仓库的 extensions/system_inject/ 整体替换已安装的扩展目录:
+   - 删除 ~/.omp/agent/extensions/system_inject/ 的全部内容
+   - 将仓库 extensions/system_inject/ 完整复制到 ~/.omp/agent/extensions/system_inject/
+3. 用仓库 inject/ 下的 .md 文件覆盖已安装的版本文件
+   (~/.omp/agent/system_inject/,目录不存在则创建):
+   - 只覆盖仓库中存在的同名文件(如 pier.md、lo.md)
+   - 不要删除用户自行添加的其他 .md 版本文件
+4. 验证更新:
+   - ~/.omp/agent/extensions/system_inject/index.ts 存在
+   - ~/.omp/agent/system_inject/ 下存在 pier.md 与 lo.md
+5. 完成后告知用户:重启 omp 生效。
+
+约束:不要修改任何复制过去的文件内容;git 操作仅限于获取仓库代码;不要执行本项目之外的命令。
+```
+
 ## 提示词版本格式
 
 ```markdown
