@@ -28,5 +28,5 @@ export interface UiCtx {
     ) => Promise<string | undefined>;
     notify: (msg: string, type?: "info" | "warning" | "error") => void;
   };
-  sessionManager: { getBranch(): readonly unknown[] };
+  sessionManager: { getBranch(): readonly unknown[]; getSessionFile?(): string | undefined };
 }

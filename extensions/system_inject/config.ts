@@ -6,7 +6,7 @@
 //   session  —— 仅由 switch 固化写入(未锁定窗口),resume 恢复;setting 不触碰
 //   project/global —— 由 setting 写入;clear 删除文件恢复继承
 
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { homedir } from "node:os";
 import { SESSION_STATE_TYPE, type ConfigLevel, type UiCtx } from "./types";
@@ -65,18 +65,55 @@ export function clearLevelValue(level: ConfigLevel, cwd: string): void {
   }
 }
 
-function readSessionLevel(ctx: UiCtx): string | undefined {
+/** 扫描一组 entry,取最后一条会话级配置(旧→新顺序)。 */
+function scanSessionEntries(entries: readonly unknown[]): string | undefined {
+  for (let i = entries.length - 1; i >= 0; i--) {
+    const e = entries[i] as { type?: string; customType?: string; data?: unknown };
+    if (e.type === "custom" && e.customType === SESSION_STATE_TYPE) {
+      return typeof e.data === "string" ? e.data : undefined;
+    }
+  }
+  return undefined;
+}
+
+/** 扫描会话 JSONL 文件,取最后一条会话级配置(行序 = 时间序,最后匹配 = 最新)。 */
+function scanSessionFile(file: string): string | undefined {
   try {
-    // getBranch() 为根→叶(旧→新)顺序,取最后一条匹配 = 最新固化值
-    const entries = ctx.sessionManager.getBranch();
-    for (let i = entries.length - 1; i >= 0; i--) {
-      const e = entries[i] as { type?: string; customType?: string; data?: unknown };
-      if (e.type === "custom" && e.customType === SESSION_STATE_TYPE) {
-        return typeof e.data === "string" ? e.data : undefined;
+    let found: string | undefined;
+    for (const line of readFileSync(file, "utf8").split("\n")) {
+      if (!line.trim()) continue;
+      const e = JSON.parse(line) as { type?: string; customType?: string; data?: unknown };
+      if (e.type === "custom" && e.customType === SESSION_STATE_TYPE && typeof e.data === "string") {
+        found = e.data;
       }
     }
+    return found;
   } catch {
-    // 会话读取失败 → 无配置
+    // 读取失败 → 无配置
+  }
+  return undefined;
+}
+
+/**
+ * 会话级配置:主会话读自身 branch(switch 固化,resume 恢复);
+ * subagent 无独立会话配置,沿会话文件层级向上继承父会话
+ * (子会话文件位于 `<父会话>.jsonl` 去后缀的目录内,见 omp 的
+ * resolveBreadcrumbToInteractiveRoot),首个有配置的祖先生效。
+ */
+function readSessionLevel(ctx: UiCtx): string | undefined {
+  const own = scanSessionEntries(ctx.sessionManager.getBranch());
+  if (own !== undefined) return own;
+
+  const file = ctx.sessionManager.getSessionFile?.();
+  if (file) {
+    let current = file;
+    for (let depth = 0; depth < 8; depth++) {
+      const parentFile = `${dirname(current)}.jsonl`;
+      if (!existsSync(parentFile)) break;
+      const value = scanSessionFile(parentFile);
+      if (value !== undefined) return value;
+      current = parentFile;
+    }
   }
   return undefined;
 }
