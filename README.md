@@ -56,13 +56,16 @@ cp inject/*.md <你的项目>/.omp/system_inject/
 > 将以下内容整体复制给 omp 或任何 coding agent,它会自动完成安装,无需手动操作。
 
 ```text
-请在 Windows 上为当前用户安装 omp-system-inject(本仓库):
+请为当前用户安装 omp-system-inject,自动适配当前操作系统。
+仓库:https://github.com/zhurongjun/omp-system-inject.git
+(如当前不在该仓库目录,请先克隆到临时目录再操作)
 
-1. 将本仓库的 extensions/system_inject/ 目录复制到 ~/.omp/agent/extensions/system_inject/
-   (即 C:\Users\<当前用户名>\.omp\agent\extensions\system_inject\)。
-2. 若 ~/.omp/agent/extensions/ 下存在旧版单文件 system_inject.ts,删除它
+1. 将仓库的 extensions/system_inject/ 目录复制到用户级 omp 扩展目录:
+   ~/.omp/agent/extensions/system_inject/
+   (若当前平台没有 ~/.omp/agent 结构,先按 omp 的扩展发现规则确认用户配置目录)。
+2. 若用户扩展目录下存在旧版单文件 system_inject.ts,删除它
    (避免与目录版扩展重复注册 /system-inject 命令)。
-3. 将本仓库 inject/ 目录下的所有 .md 文件复制到 ~/.omp/agent/system_inject/
+3. 将仓库 inject/ 目录下的所有 .md 文件复制到 ~/.omp/agent/system_inject/
    (目录不存在则创建)。
 4. 验证安装:
    - ~/.omp/agent/extensions/system_inject/index.ts 存在
