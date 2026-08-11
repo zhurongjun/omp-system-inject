@@ -67,8 +67,10 @@ export function clearLevelValue(level: ConfigLevel, cwd: string): void {
 
 function readSessionLevel(ctx: UiCtx): string | undefined {
   try {
-    for (const entry of ctx.sessionManager.getBranch()) {
-      const e = entry as { type?: string; customType?: string; data?: unknown };
+    // getBranch() 为根→叶(旧→新)顺序,取最后一条匹配 = 最新固化值
+    const entries = ctx.sessionManager.getBranch();
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const e = entries[i] as { type?: string; customType?: string; data?: unknown };
       if (e.type === "custom" && e.customType === SESSION_STATE_TYPE) {
         return typeof e.data === "string" ? e.data : undefined;
       }
