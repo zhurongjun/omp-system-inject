@@ -51,6 +51,28 @@ cp inject/*.md <你的项目>/.omp/system_inject/
 /system-inject off        关闭本会话注入
 ```
 
+## 一键安装(把下面这段复制给任意 coding agent)
+
+> 将以下内容整体复制给 omp 或任何 coding agent,它会自动完成安装,无需手动操作。
+
+```text
+请在 Windows 上为当前用户安装 omp-system-inject(本仓库):
+
+1. 将本仓库的 extensions/system_inject/ 目录复制到 ~/.omp/agent/extensions/system_inject/
+   (即 C:\Users\<当前用户名>\.omp\agent\extensions\system_inject\)。
+2. 若 ~/.omp/agent/extensions/ 下存在旧版单文件 system_inject.ts,删除它
+   (避免与目录版扩展重复注册 /system-inject 命令)。
+3. 将本仓库 inject/ 目录下的所有 .md 文件复制到 ~/.omp/agent/system_inject/
+   (目录不存在则创建)。
+4. 验证安装:
+   - ~/.omp/agent/extensions/system_inject/index.ts 存在
+   - ~/.omp/agent/system_inject/ 下包含 pier.md 与 lo.md,且文件名不含 off
+5. 完成后告知用户:重启 omp 生效;可用命令为 /system-inject switch 与
+   /system-inject settings。
+
+约束:不要修改任何复制过去的文件内容;不要执行 git 操作;不要执行本项目之外的命令。
+```
+
 ## 提示词版本格式
 
 ```markdown
