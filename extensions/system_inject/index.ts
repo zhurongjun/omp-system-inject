@@ -6,7 +6,7 @@ import { resolveVersion, scanVersions } from "./versions";
 import { mergedValue } from "./config";
 import { updateWidget } from "./ui";
 import { openSettings, openSwitch, type CommandDeps } from "./commands";
-import { stripPersonality, stripRoleSection } from "./prompt";
+import { extractRoleSection, stripPersonality, stripRoleSection } from "./prompt";
 
 export default function (ext: ExtensionAPI) {
   // 配置链(唯一真相,getter 实时解析,无内存状态):
@@ -106,9 +106,18 @@ export default function (ext: ExtensionAPI) {
     const text = version.body.trim();
     if (!text) return;
 
-    const blocks = event.systemPrompt.map((block, i) =>
-      i === 0 ? stripPersonality(stripRoleSection(block)) : block,
-    );
+    const blocks = event.systemPrompt.map((block, i) => {
+      if (i !== 0) return block;
+      const roleSection = extractRoleSection(block); // 切除前先提取,用于调试日志
+      const stripped = stripPersonality(stripRoleSection(block));
+      if (roleSection !== null) {
+        ext.logger.info("system_inject: role section stripped", {
+          version: version.name,
+          removed: roleSection,
+        });
+      }
+      return stripped;
+    });
     if (blocks[0] === text) return; // 防御:避免重复注入
 
     ext.logger.info("system_inject: injected", {
